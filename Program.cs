@@ -6,7 +6,7 @@ class Program {
 		GameManager game = new();
 		game.AddDefaultPieces();
 		Console.WriteLine(game.ToFen());
-		game.ApplyMove(new(4, 6, 4, 4));
+		game.ApplyMove(Move.FromSquares("e2", "e4"));
 		Console.WriteLine(game.ToFen());
 
 		return 0;
