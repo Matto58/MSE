@@ -3,7 +3,7 @@
 class Program {
 	public static int Main(string[] args) {
 		Console.WriteLine("MSE");
-		GameManager game = new();
+		Board game = new();
 		game.AddDefaultPieces();
 		Console.WriteLine(game.ToFen());
 		game.ApplyMove(Move.FromSquares("e2", "e4"));

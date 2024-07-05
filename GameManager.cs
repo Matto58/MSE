@@ -1,12 +1,9 @@
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
 namespace Mattodev.MSE;
 
-public class GameManager {
+public class Board {
 	public Piece[] pieces;
 
-	public GameManager() {
+	public Board() {
 		pieces = new Piece[64];
 	}
 
@@ -102,20 +99,28 @@ public enum Piece : ushort {
 
 public class Move {
 	public (int x, int y) from, to;
-	public Move(int x1, int y1, int x2, int y2) {
+	public Piece? promotesTo;
+	public Move(int x1, int y1, int x2, int y2, Piece? promotesTo = null) {
 		//Console.WriteLine($"Move..ctor: ({x1} {y1} {x2} {y2})");
 		if (!SquareWithinBoardBounds(x1, y1) || !SquareWithinBoardBounds(x2, y2))
 			throw new ArgumentException("Square out of bounds");
 		from = (x1, y1);
 		to = (x2, y2);
+		this.promotesTo = promotesTo;
 	}
-	public static Move FromSquares(string square1, string square2) {
+	public static Move FromSquares(string square1, string square2, Piece? promotesTo = null) {
 		if (square1.Length != 2 || square2.Length != 2)
 			throw new ArgumentException("Invalid square string size (must be 2, for column and row respectively)");
 		return new(
 			ColLetterToX(square1[0]), RowLetterToY(square1[1]),
-			ColLetterToX(square2[0]), RowLetterToY(square2[1])
+			ColLetterToX(square2[0]), RowLetterToY(square2[1]),
+			promotesTo
 		);
+	}
+	public static Move FromSquares(string squares, Piece? promotesTo = null) {
+		if (squares.Length != 4)
+			throw new ArgumentException("Invalid squares string size (must be 4, for 2 columns and rows for each respective square)");
+		return FromSquares(squares[0..2], squares[2..4], promotesTo);
 	}
 
 	public static bool SquareWithinBoardBounds(int x, int y) => 0 <= x && x <= 7 && 0 <= y && y <= 7;
@@ -127,4 +132,7 @@ public class Move {
 		=> row >= '0' && row <= '7' ? 7-(row - '1') : throw new ArgumentException("Invalid row letter (must be 7-0)");
 	public static char RowLetterFromY(int y)
 		=> y >= 0 && y <= 7 ? (char)(y + '1') : throw new ArgumentException("Invalid Y (must be 0 <= y <= 7)");
+
+	public override string ToString()
+		=> $"{ColLetterFromX(from.x)}{RowLetterFromY(from.y)}{ColLetterFromX(to.x)}{RowLetterFromY(to.y)}";
 }
