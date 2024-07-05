@@ -44,7 +44,7 @@ public class Board {
 	public string ToVisualisation() {
 		string vis =
 			"  \n" +
-			" +--------+";
+			" +--------+\n";
 		for (int y = 0; y < 8; y++) {
 			vis += $"{y}|";
 			for (int x = 0; x < 8; x++)
@@ -86,7 +86,7 @@ public class Board {
 	}
 }
 
-public enum Piece : ushort {
+public enum Piece : byte {
 	None = 0b0000,
 	Pawn = 0b0001,
 	Bishop = 0b0010,
@@ -129,7 +129,7 @@ public class Move {
 	public static char ColLetterFromX(int x)
 		=> x >= 0 && x <= 7 ? (char)(x + 'a') : throw new ArgumentException("Invalid X (must be 0 <= x <= 7)");
 	public static int RowLetterToY(char row)
-		=> row >= '0' && row <= '7' ? 7-(row - '1') : throw new ArgumentException("Invalid row letter (must be 7-0)");
+		=> row >= '1' && row <= '8' ? 7-(row - '1') : throw new ArgumentException("Invalid row letter (must be 8-1)");
 	public static char RowLetterFromY(int y)
 		=> y >= 0 && y <= 7 ? (char)(y + '1') : throw new ArgumentException("Invalid Y (must be 0 <= y <= 7)");
 
