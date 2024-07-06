@@ -43,15 +43,14 @@ public class Board {
 	}
 	public string ToVisualisation() {
 		string vis =
-			"  \n" +
 			" +--------+\n";
 		for (int y = 0; y < 8; y++) {
-			vis += $"{y}|";
+			vis += $"{8-y}|";
 			for (int x = 0; x < 8; x++)
 				vis += pieces[y*8+x] == Piece.None ? ' ' : PieceToFenLetter(pieces[y*8+x]);
 			vis += "|\n";
 		}
-		vis += " +--------+";
+		vis += " +--------+\n  abcdefgh";
 		return vis;
 	}
 	public bool ApplyMove(Move move) {

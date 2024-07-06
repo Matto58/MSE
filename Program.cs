@@ -3,22 +3,18 @@
 class Program {
 	public static int Main(string[] args) {
 		Console.WriteLine("MSE");
-		Board game = new();
-		Move[] movesToApplyForTesting = [
-			Move.FromSquares("e2e4"),
-			Move.FromSquares("e7e5"),
-			Move.FromSquares("b1c3"),
-			Move.FromSquares("g8f6"),
-			Move.FromSquares("f2f4"),
-		];
-		game.AddDefaultPieces();
-		
-		foreach (Move move in movesToApplyForTesting) {
-			game.ApplyMove(move);
-			Console.WriteLine(game.ToVisualisation());
-			Console.WriteLine($"Eval:\t{EngineEval.TotalEvaluate(ref game)}");
-			Console.WriteLine("(press any key to continue)");
-			Console.ReadKey(true);
+		Engine.DebugMode = false;
+		Engine.LessVerboseDebugMode = false;
+		Engine engine = new(null, false);
+		while (!engine.gameOver) {
+			(Move move, double eval) = engine.Ponder(4)!.Value;
+			//Console.WriteLine($"Top move: {move} (eval={eval})");
+			engine.board.ApplyMove(move);
+			Console.WriteLine(engine.board.ToVisualisation());
+			Console.Write("Your move?");
+			// FIXME: relies entirely on trust of the human playing to not take the king or anything
+			string userMove = Console.ReadLine() ?? "";
+			engine.board.ApplyMove(Move.FromSquares(userMove));
 		}
 
 		return 0;

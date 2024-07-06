@@ -1,26 +1,27 @@
 namespace Mattodev.MSE;
 
 public class EngineEval {
-	public static double TotalEvaluate(ref Board board) {
+	public static double TotalEvaluate(Board board) {
 		return
-			evalCenterPawns(ref board, false) - evalCenterPawns(ref board, true)
-			+ evalTargetedMat(ref board, false) - evalTargetedMat(ref board, true)
-			+ evalPieceDev(ref board, false) - evalPieceDev(ref board, true)
-			+ evalKingSafety(ref board, false) - evalKingSafety(ref board, true);
+			evalCenterPawns(board, false) - evalCenterPawns(board, true)
+			+ evalTargetedMat(board, false) - evalTargetedMat(board, true)
+			+ evalPieceDev(board, false) - evalPieceDev(board, true)
+			+ evalKingSafety(board, false) - evalKingSafety(board, true)
+			+ evalCountMaterial(board, false) - evalCountMaterial(board, true);
 	}
 	
-	private static double evalTargetedMat(ref Board board, bool forBlack) {
+	private static double evalTargetedMat(Board board, bool forBlack) {
 		return 0.0;
 	}
 
-	private static double evalCenterPawns(ref Board board, bool forBlack) {
+	private static double evalCenterPawns(Board board, bool forBlack) {
 		double eval = 0.0;
 		Piece color = forBlack ? Piece.Black : Piece.None;
 		for (int y = 0; y < 8; y++)
 			for (int x = 0; x <	8; x++)
 				if ((board.pieces[y*8+x] & (Piece)0b111) == Piece.Pawn && (board.pieces[y*8+x] & Piece.Black) == color)
 					eval += (-dist(x, y, 3.5, 3.5)) + (evalCenterPawnsXWeight(x) * evalCenterPawnsYWeight(y));
-		Console.WriteLine($"evalCenterPawns\tforBlack={forBlack}\teval={eval}");
+		if (Engine.DebugMode) Console.WriteLine($"evalCenterPawns\tforBlack={forBlack}\teval={eval}");
 		return eval;
 	}
 	private static double evalCenterPawnsXWeight(int x)
@@ -38,7 +39,7 @@ public class EngineEval {
 	private static double evalCenterPawnsYWeight(int y)
 		=> y switch {
 			1 => 0.4,
-			2 => 1.0,
+			2 => 1.5,
 			3 => 1.75,
 			4 => 1.5,
 			5 => 1.75,
@@ -46,7 +47,7 @@ public class EngineEval {
 			_ => throw new ArgumentException("Invalid Y value")
 		};
 
-	private static double evalPieceDev(ref Board board, bool forBlack) {
+	private static double evalPieceDev(Board board, bool forBlack) {
 		double eval = 0.0;
 		Piece color = forBlack ? Piece.Black : Piece.None;
 		for (int y = 0; y < 8; y++)
@@ -59,7 +60,7 @@ public class EngineEval {
 		return eval;
 	}
 
-	private static double evalKingSafety(ref Board board, bool forBlack) {
+	private static double evalKingSafety(Board board, bool forBlack) {
 		int x = 0, y = 0;
 		bool foundKing = false;
 		for (int x2 = 0; x2 < 8 && !foundKing; x2++)
@@ -87,6 +88,27 @@ public class EngineEval {
 			6 => 1.5,
 			7 => 1,
 			_ => throw new ArgumentException("Invalid X value")
+		};
+
+	private static double evalCountMaterial(Board board, bool forBlack) {
+		double eval = 0.0;
+		Piece color = forBlack ? Piece.Black : Piece.None;
+		for (int y = 0; y < 8; y++)
+			for (int x = 0; x <	8; x++)
+				if ((board.pieces[y*8+x] & Piece.Black) == color && board.pieces[y*8+x] != Piece.None)
+					eval += evalCountMaterialPieceToMat(board.pieces[y*8+x] & (Piece)0b111);
+		if (Engine.DebugMode) Console.WriteLine($"evalCountMaterial\tforBlack={forBlack}\teval={eval}");
+		return eval;
+	}
+	private static double evalCountMaterialPieceToMat(Piece p)
+		=> p switch {
+			Piece.Pawn => 1,
+			Piece.Knight => 3,
+			Piece.Bishop => 3.5,
+			Piece.Rook => 5,
+			Piece.Queen => 9,
+			Piece.King => 1000.0,
+			_ => throw new ArgumentException("Invalid piece entered")
 		};
 
 	private static double dist(double x, double y, double x2, double y2) {

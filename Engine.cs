@@ -1,11 +1,16 @@
+using System.Diagnostics;
+
 namespace Mattodev.MSE;
 
 public class Engine {
 	public static bool DebugMode = false;
+    public static bool LessVerboseDebugMode = false;
 	public bool playsAsBlack;
+	public bool gameOver = false;
 	public Board board;
 
-	public Engine(Board? board, bool playsAsBlack) {
+
+    public Engine(Board? board, bool playsAsBlack) {
 		if (board != null) this.board = board;
 		else {
 			this.board = new();
@@ -14,8 +19,41 @@ public class Engine {
 		this.playsAsBlack = playsAsBlack;
 	}
 
+	public (Move move, double eval)? Ponder(int depth = 1) {
+		List<Move> moves = GenerateLegalMoves();
+		if (moves.Count == 0) {
+			gameOver = true;
+			return null;
+		}
+		List<(Move move, double eval)> evaledMoves = [];
+		Board newBoard = new();
+		Engine newEng;
+		foreach (Move move in moves) {
+			for (int i = 0; i < 64; i++) newBoard.pieces[i] = board.pieces[i];
+			newEng = new(newBoard, !playsAsBlack);
+			newBoard.ApplyMove(move);
+			if (DebugMode) Console.WriteLine($"Ponder\tMove #{evaledMoves.Count+1}\t{move}...");
+			evaledMoves.Add((move, EngineEval.TotalEvaluate(newBoard)));
+			if (DebugMode) Console.WriteLine($"Ponder\tMove #{evaledMoves.Count}\t..evals at {evaledMoves[^1].eval}");
+
+			if (depth > 1) {
+				if (DebugMode) Console.WriteLine($"Ponder\tGoing deeper... (current depth={depth})");
+				var newEvaled = newEng.Ponder(depth-1);
+				if (newEvaled == null) continue;
+				evaledMoves[^1] = (evaledMoves[^1].move, (evaledMoves[^1].eval + newEvaled.Value.eval)/2);
+			}
+		}
+		evaledMoves.Sort((a, b) => (int)(b.eval*1000 - a.eval*1000));
+		if (DebugMode || LessVerboseDebugMode) {
+			Console.WriteLine($"Ponder\tTop: {evaledMoves[0].move}\tWorst: {evaledMoves[^1].move}\tDepth: {depth}");
+			//Console.WriteLine($"Ponder\tPrevious position:\n{newBoard.ToVisualisation()}");
+		}
+		return evaledMoves[0];
+	}
+
 	public List<Move> GenerateLegalMoves() {
 		List<Move> moves = [];
+		if (DebugMode) Console.WriteLine($"GenerateLegalMoves\tEngine plays as black? {playsAsBlack}");
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
 				bool black = (board.pieces[y*8+x] & Piece.Black) == Piece.Black;
@@ -26,7 +64,7 @@ public class Engine {
 				switch (p) {
 					case Piece.Pawn: {
 						if (y == (black ? 0 : 7)) continue;
-						int y2 = y + (black ? -1 : 1);
+						int y2 = y + (black ? 1 : -1);
 						if (y == (black ? 1 : 6)) {
 							moves.AddRange([
 								new(x, y, x, y2, Piece.Bishop),
@@ -36,6 +74,7 @@ public class Engine {
 							]);
 						}
 						else moves.Add(new(x, y, x, y2));
+						if (y == (black ? 6 : 1)) moves.Add(new(x, y, x, y2*2));
 						break;
 					}
 					case Piece.Rook: {
@@ -95,6 +134,6 @@ public class Engine {
 		addMoveIfWithinRange(x, y, x-2, y-1, ref moves);
 	}
 	private void addMoveIfWithinRange(int x, int y, int x2, int y2, ref List<Move> moves) {
-		if (Move.SquareWithinBoardBounds(x2, y2)) moves.Add(new(x, y, x2, y2));
+		if (Move.SquareWithinBoardBounds(x2, y2) && board.pieces[y*8+x] == Piece.None) moves.Add(new(x, y, x2, y2));
 	}
 }
