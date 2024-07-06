@@ -4,13 +4,12 @@ class Program {
 	public static int Main(string[] args) {
 		Console.WriteLine("MSE");
 		Board game = new();
-		Move[] movesToApplyForTesting = [/*
+		Move[] movesToApplyForTesting = [
 			Move.FromSquares("e2e4"),
 			Move.FromSquares("e7e5"),
 			Move.FromSquares("b1c3"),
 			Move.FromSquares("g8f6"),
-			Move.FromSquares("f2f4"),*/
-			Move.FromSquares("g2g4")
+			Move.FromSquares("f2f4"),
 		];
 		game.AddDefaultPieces();
 		

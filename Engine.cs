@@ -1,6 +1,7 @@
 namespace Mattodev.MSE;
 
 public class Engine {
+	public static bool DebugMode = false;
 	public bool playsAsBlack;
 	public Board board;
 

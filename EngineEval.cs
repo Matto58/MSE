@@ -1,7 +1,6 @@
 namespace Mattodev.MSE;
 
 public class EngineEval {
-	// TODO: please make the grob NOT have a higher eval (~27.816) than literally 1.e4 (~21.881)
 	public static double TotalEvaluate(ref Board board) {
 		return
 			evalCenterPawns(ref board, false) - evalCenterPawns(ref board, true)
@@ -20,7 +19,8 @@ public class EngineEval {
 		for (int y = 0; y < 8; y++)
 			for (int x = 0; x <	8; x++)
 				if ((board.pieces[y*8+x] & (Piece)0b111) == Piece.Pawn && (board.pieces[y*8+x] & Piece.Black) == color)
-					eval += dist(x, y, 3.5, 3.5) * evalCenterPawnsXWeight(x) * evalCenterPawnsYWeight(y);
+					eval += (-dist(x, y, 3.5, 3.5)) + (evalCenterPawnsXWeight(x) * evalCenterPawnsYWeight(y));
+		Console.WriteLine($"evalCenterPawns\tforBlack={forBlack}\teval={eval}");
 		return eval;
 	}
 	private static double evalCenterPawnsXWeight(int x)
@@ -39,8 +39,8 @@ public class EngineEval {
 		=> y switch {
 			1 => 0.4,
 			2 => 1.0,
-			3 => 1.5,
-			4 => 1.25,
+			3 => 1.75,
+			4 => 1.5,
 			5 => 1.75,
 			6 => 2.0,
 			_ => throw new ArgumentException("Invalid Y value")
@@ -55,6 +55,7 @@ public class EngineEval {
 					&& (board.pieces[y*8+x] & Piece.Black) == color)
 					eval += dist(x, y, 3.5, 3.5) * evalCenterPawnsXWeight(x) * evalCenterPawnsXWeight(y);
 
+		if (Engine.DebugMode) Console.WriteLine($"evalPieceDev\tforBlack={forBlack}\teval={eval}");
 		return eval;
 	}
 
@@ -71,7 +72,9 @@ public class EngineEval {
 		
 		if (!foundKing)
 			throw new Exception("Board is missing king(s)");
-		return dist(x, y, 3.5, forBlack ? 7.0 : 0.0) * evalKingSafetyXWeight(x);
+		double eval = dist(x, y, 3.5, forBlack ? 7.0 : 0.0) * evalKingSafetyXWeight(x);
+		if (Engine.DebugMode) Console.WriteLine($"evalKingSafety\tforBlack={forBlack}\teval={eval}");
+		return eval;
 	}
 	private static double evalKingSafetyXWeight(int x)
 		=> x switch {

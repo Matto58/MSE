@@ -101,7 +101,7 @@ public class Move {
 	public (int x, int y) from, to;
 	public Piece? promotesTo;
 	public Move(int x1, int y1, int x2, int y2, Piece? promotesTo = null) {
-		//Console.WriteLine($"Move..ctor: ({x1} {y1} {x2} {y2})");
+		if (Engine.DebugMode) Console.WriteLine($"Move..ctor\t({x1} {y1} {x2} {y2})");
 		if (!SquareWithinBoardBounds(x1, y1) || !SquareWithinBoardBounds(x2, y2))
 			throw new ArgumentException("Square out of bounds");
 		from = (x1, y1);
